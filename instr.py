@@ -1,7 +1,88 @@
 from enum import IntEnum, unique
 
-def encode(opcode, mas, rs, mad, rd):
-    return (opcode << 12) | (mas << 10) | (rs << 6) | (mad << 4) | rd
+class InvalidInstruction(Exception):
+    pass
+
+def encode_one_op(opcode, ad, r, offset=0):
+    '''Encode instructions with one operand
+
+    Args:
+        opcode - the opcode of the instruction
+        ad - addressing mode
+        r - source/destination register or immediate value
+        offset - the offset from the value of the register in case of indexed addr. mode
+
+    Returns:
+        The encoded instruction
+    '''
+    instr = []
+    if AddrMode.IMMEDIATE == ad:
+        valid_with_imm = [OpCode.JMP, OpCode.CALL, OpCode.PUSH]
+        if opcode not in valid_with_imm:
+            raise InvalidInstruction('Cannot use immediate addressing with {}'.format(opcode.name))
+
+        instr = [(opcode << 6) | (ad << 4) | 0, r]
+    else:
+        instr = [(opcode << 6) | (ad << 4) | r]
+
+    if AddrMode.INDEXED == ad:
+        instr.append(offset)
+
+    return instr
+
+
+def encode_two_op(opcode, mad, rd, mas, rs, offsetd=0, offsets=0):
+    '''Encode instructions with two operands
+
+    Args:
+        opcode - the opcode of the instructions
+        mad - destination addressing mode
+        rd - destination register
+        mas - source addressing mode
+        rs - source register
+        offsets - the offset from the value of the source register
+            in case of indexed addr. mode
+        offsetd - the offset from the value of the destination register
+            in case of indexed addr. mode
+
+    Returns:
+        The encoded instruction
+    '''
+    valid_addr_modes = [
+        #(SRC, DST)
+        #(IMM, REG)
+        (AddrMode.IMMEDIATE, AddrMode.DIRECT),
+        #(IMM, MEM)
+        (AddrMode.IMMEDIATE, AddrMode.INDIRECT),
+        (AddrMode.IMMEDIATE, AddrMode.INDEXED),
+        #(REG, REG)
+        (AddrMode.DIRECT, AddrMode.DIRECT),
+        #(REG, MEM)
+        (AddrMode.DIRECT, AddrMode.INDIRECT),
+        (AddrMode.DIRECT, AddrMode.INDEXED),
+        #(MEM, REG)
+        (AddrMode.INDIRECT, AddrMode.DIRECT),
+        (AddrMode.INDEXED, AddrMode.DIRECT),
+        #(MEM, MEM)
+        (AddrMode.INDIRECT, AddrMode.INDIRECT),
+        (AddrMode.INDIRECT, AddrMode.INDEXED),
+        (AddrMode.INDEXED, AddrMode.INDEXED),
+        (AddrMode.INDEXED, AddrMode.INDIRECT),
+    ]
+
+    if (mas, mad) not in valid_addr_modes:
+        raise InvalidInstruction('Invalid addressing modes, source: {}, destination: {}, op: {}'
+            .format(mas.name, mad.name, opcode.name))
+
+    instr = [(opcode << 12) | (mas << 10) | (rs << 6) | (mad << 4) | rd]
+
+    if AddrMode.INDEXED == mad:
+        instr.append(offsetd)
+
+    if AddrMode.INDEXED == mas:
+        instr.append(offsets)
+
+    return instr
 
 
 @unique
