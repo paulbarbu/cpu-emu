@@ -3,14 +3,41 @@ from enum import IntEnum, unique
 class InvalidInstruction(Exception):
     pass
 
+def checkRegister(r, opcode):
+    if r >= 16:
+        raise InvalidInstruction('Valid register values: R0-R15, given {} to {}'
+            .format(r, opcode.name))
+
+def checkLiteral(val, opcode):
+    if val >= 2**16:
+        raise InvalidInstruction('Literal values should be smaller than 0x{:X}, given 0x{:X} to {}'
+            .format(2**16, val, opcode.name))
+
+
+def encode_br(opcode, offset):
+    '''Encode branch instructions
+
+    Args:
+        opcode - the opcode of the instruction
+        offset - the offset relative to the PC to jump to
+
+    Returns:
+        The encoded instruction
+    '''
+    if offset >= 2**8:
+        raise InvalidInstruction('Branch instructions should use an offset smaller than 0x{:X}, given 0x{:X} to {}'
+            .format(2**8, offset, opcode.name))
+
+    return [opcode << 8 | offset]
+
 def encode_one_op(opcode, ad, r, offset=0):
     '''Encode instructions with one operand
 
     Args:
         opcode - the opcode of the instruction
         ad - addressing mode
-        r - source/destination register or immediate value
-        offset - the offset from the value of the register in case of indexed addr. mode
+        r - source/destination register or 0 in case of immediate addr. mode
+        offset - the offset from the value of the register in case of indexed addr. mode or immediate value
 
     Returns:
         The encoded instruction
@@ -21,11 +48,15 @@ def encode_one_op(opcode, ad, r, offset=0):
         if opcode not in valid_with_imm:
             raise InvalidInstruction('Cannot use immediate addressing with {}'.format(opcode.name))
 
-        instr = [(opcode << 6) | (ad << 4) | 0, r]
+        checkLiteral(offset, opcode)
+
+        instr = [(opcode << 6) | (ad << 4) | 0, offset]
     else:
+        checkRegister(r, opcode)
         instr = [(opcode << 6) | (ad << 4) | r]
 
     if AddrMode.INDEXED == ad:
+        checkLiteral(offset, opcode)
         instr.append(offset)
 
     return instr
@@ -50,6 +81,7 @@ def encode_two_op(opcode, mad, rd, mas, rs, offsetd=0, offsets=0):
     '''
     valid_addr_modes = [
         #(SRC, DST)
+
         #(IMM, REG)
         (AddrMode.IMMEDIATE, AddrMode.DIRECT),
         #(IMM, MEM)
@@ -74,13 +106,18 @@ def encode_two_op(opcode, mad, rd, mas, rs, offsetd=0, offsets=0):
         raise InvalidInstruction('Invalid addressing modes, source: {}, destination: {}, op: {}'
             .format(mas.name, mad.name, opcode.name))
 
+    checkRegister(rs, opcode)
+    checkRegister(rd, opcode)
+
     instr = [(opcode << 12) | (mas << 10) | (rs << 6) | (mad << 4) | rd]
 
-    if AddrMode.INDEXED == mad:
-        instr.append(offsetd)
-
-    if AddrMode.INDEXED == mas:
+    if AddrMode.INDEXED == mas or AddrMode.IMMEDIATE == mas:
+        checkLiteral(offsets, opcode)
         instr.append(offsets)
+
+    if AddrMode.INDEXED == mad:
+        checkLiteral(offsetd, opcode)
+        instr.append(offsetd)
 
     return instr
 
