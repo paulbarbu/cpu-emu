@@ -108,4 +108,6 @@ if __name__ == '__main__':
     showExampleEncodings()
     print()
     asm = Assembler('examples/factorial.asm')
+    #asm = Assembler('examples/mul.asm')
+    #asm = Assembler('examples/int.asm')
     print(asm.parse())

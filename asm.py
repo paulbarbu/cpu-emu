@@ -1,4 +1,4 @@
-class ParseException(Exception):
+class ParseError(Exception):
     pass
 
 class Assembler(object):
@@ -12,6 +12,7 @@ class Assembler(object):
         '''
         self.programText = []
         self.programCode = []
+        self.lblToAddr = {}
         self.filePath = filePath
 
 
@@ -58,45 +59,86 @@ class Assembler(object):
             line - the assembly line
 
         Raises:
-            ParseException - if an opcode cannot be parsed
+            ParseError - if an opcode cannot be parsed
         '''
+        #TODO: use enum_member.name to identify what I need
         pass
+
+
+    def _tokenize(self):
+        '''Tokenize the program lines into its components
+
+        Raises:
+            ParseError - if the line is not standard assembly:
+            OPCODE OP,OP
+            OPCODE
+            OPCODE OP
+        '''
+        tokenizedText = []
+
+        for line in self.programText:
+            split_line = line.split(' ', 1)
+
+            #remove spaces from the arguments
+            split_line = list(map(lambda x: x.replace(' ', ''), split_line))
+
+            l = len(split_line)
+
+            if l == 2: # instruction with one or two operands
+                split_line = [split_line[0]] +  split_line[1].split(',')
+            elif l > 2:
+                raise ParseError('Invalid instruction: {}'.format(line))
+
+            tokenizedText.append(split_line)
+
+        self.programText = tokenizedText
+
+
+    def _replaceLabels(self):
+        '''Replace label names with addresses
+        '''
+        replacedText = []
+
+        for line in self.programText:
+            replaced_line = [line[0]]
+            for token in line[1:]:
+                replaced_token = token
+                for k, v in self.lblToAddr.items():
+                    if k == token:
+                        # replace the label name with its address
+                        replaced_token = str(v)
+                        break
+
+                replaced_line.append(replaced_token)
+
+            replacedText.append(replaced_line)
+
+        self.programText = replacedText
 
 
     def _labelsToAddr(self):
         '''Translate the labels found in code to real addresses'''
-        ct = 0
-        lblToAddr = {}
+        ct = 0 # address counter
         definitionlessText = []
-        newText = []
 
         #search for label definitions
         for line in self.programText:
             markIndex = line.find(':')
 
             if markIndex == len(line) - 1: # the whole line is just a label
-                lblToAddr[line[:-1]] = ct
+                # store it without the ":"
+                self.lblToAddr[line[:-1]] = ct
             elif markIndex != -1: # the line starts with a label
-                lblToAddr[line[:markIndex]] = ct
+                self.lblToAddr[line[:markIndex]] = ct
                 ct += 1
-                definitionlessText.append(line[markIndex+1:]) # remove the label from the line
+                definitionlessText.append(line[markIndex+1:].strip()) # remove the label from the line
             else: # there is no label definition on this line
                 ct += 1
-                definitionlessText.append(line)
+                definitionlessText.append(line.strip())
 
-        for line in definitionlessText:
-            replaced = False
-            for k, v in lblToAddr.items():
-                if k in line:
-                    # replace the label name with its address
-                    newText.append(line.replace(k, str(v)))
-                    replaced = True
-                    break
+        print(self.lblToAddr)
 
-            if not replaced:
-                newText.append(line)
-
-        self.programText = newText
+        self.programText = definitionlessText
 
 
     def parse(self):
@@ -109,25 +151,26 @@ class Assembler(object):
         if not self._validatePath():
             raise ParseError('Validation for {} failed'.format(self.filePath))
 
-        try:
-            with open(self.filePath) as f:
-                for line in f:
-                    line = self._sanitize(line)
-                    if line != '':
-                        self.programText.append(line)
+        with open(self.filePath) as f:
+            for line in f:
+                line = self._sanitize(line)
+                if line != '':
+                    self.programText.append(line)
 
-            self.programText = list(filter(self._ignoreLine, self.programText))
+        self.programText = list(filter(self._ignoreLine, self.programText))
 
-            # for x in range(0,len(self.programText)):
-            #     print(x, self.programText[x])
+        self._labelsToAddr()
+        print(self.programText)
 
-            self._labelsToAddr()
-            print(self.programText)
-        except Exception as e:
-            print(e)
-            return False
+        self._tokenize()
+        self._replaceLabels()
+
+        for line in self.programText:
+            print(line)
+            #self._parseOpcode(line)
 
         return self.programCode
+
 
     def _ignoreLine(self, line):
         '''Decides whether to ignore a line or not
@@ -138,7 +181,7 @@ class Assembler(object):
 
         Returns: False if the line should be ignored, True otherwise
         '''
-        if line[0] == '.':
+        if line[0] == '.' or line == 'END':
             return False
 
         return True
