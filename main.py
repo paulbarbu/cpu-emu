@@ -1,6 +1,7 @@
 #! /usr/bin/python3.5
 
 from instr import *
+from asm import Assembler
 
 def showExampleEncodings():
     print('{:<20}\t{:>5}\t{:>10}'.format('Instr', 'Hex', 'Bin'))
@@ -105,3 +106,6 @@ def showOpCodes():
 if __name__ == '__main__':
     showOpCodes()
     showExampleEncodings()
+    print()
+    asm = Assembler('examples/factorial.asm')
+    print(asm.parse())
