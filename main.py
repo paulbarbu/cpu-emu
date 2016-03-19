@@ -43,6 +43,12 @@ def showExampleEncodings():
         ['BR 2000H', OpCode.BEQ, 0x2000],
     ]
 
+    other_list = [
+        ['PUSH PC', OpCode.PUSH_PC],
+        ['CLC', OpCode.CLC],
+        ['NOP', OpCode.NOP],
+    ]
+
     INSTR_TPL = '{0:<20}\t0x{1:04X}\t0b{1:016b}'
 
     print('Two operand instructions:')
@@ -71,6 +77,17 @@ def showExampleEncodings():
     for op in br_list:
         try:
             op_encoded = encode_br(op[1], op[2])
+            print(INSTR_TPL.format(op[0], op_encoded[0]))
+            if len(op_encoded) > 0:
+                for extra in op_encoded[1:]:
+                    print(INSTR_TPL.format('', extra))
+        except InvalidInstruction as e:
+            print(op[0], e)
+
+    print('Other instructions:')
+    for op in other_list:
+        try:
+            op_encoded = encode_other(op[1])
             print(INSTR_TPL.format(op[0], op_encoded[0]))
             if len(op_encoded) > 0:
                 for extra in op_encoded[1:]:

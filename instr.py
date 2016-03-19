@@ -13,6 +13,16 @@ def checkLiteral(val, opcode):
         raise InvalidInstruction('Literal values should be smaller than 0x{:X}, given 0x{:X} to {}'
             .format(2**16, val, opcode.name))
 
+def encode_other(opcode):
+    '''Encode instructions that do not take operands
+
+    Args:
+        opcode - the opcode of the instruction
+
+    Returns:
+        The encoded instruction
+    '''
+    return [opcode]
 
 def encode_br(opcode, offset):
     '''Encode branch instructions
@@ -29,6 +39,7 @@ def encode_br(opcode, offset):
             .format(2**8, offset, opcode.name))
 
     return [opcode << 8 | offset]
+
 
 def encode_one_op(opcode, ad, r, offset=0):
     '''Encode instructions with one operand
