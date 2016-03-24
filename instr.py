@@ -3,15 +3,42 @@ from enum import IntEnum, unique
 class InvalidInstruction(Exception):
     pass
 
+
+def getOpcodeGroup(opcode):
+    '''Get an opcode's group
+
+    Args:
+        opcode - the OpCode for which the group should be returned
+
+    Returns:
+        The Group in which the opcode belongs: eg: TWO_OP, ONE_OP, etc
+        None if the group cannot be determined
+    '''
+    group = None
+
+    if Group.TWO_OP.value <= opcode.value < Group.BRANCH.value:
+        group = Group.TWO_OP
+    elif Group.BRANCH.value <= opcode.value < Group.ONE_OP.value:
+        group = Group.BRANCH
+    elif Group.ONE_OP.value <= opcode.value < Group.OTHER.value:
+        group = Group.ONE_OP
+    elif Group.OTHER.value <= opcode.value:
+        group = Group.OTHER
+
+    return group
+
+
 def checkRegister(r, opcode):
     if r >= 16:
         raise InvalidInstruction('Valid register values: R0-R15, given {} to {}'
             .format(r, opcode.name))
 
+
 def checkLiteral(val, opcode):
     if val >= 2**16:
         raise InvalidInstruction('Literal values should be smaller than 0x{:X}, given 0x{:X} to {}'
             .format(2**16, val, opcode.name))
+
 
 def encode_other(opcode):
     '''Encode instructions that do not take operands
@@ -23,6 +50,7 @@ def encode_other(opcode):
         The encoded instruction
     '''
     return [opcode]
+
 
 def encode_br(opcode, offset):
     '''Encode branch instructions

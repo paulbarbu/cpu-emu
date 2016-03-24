@@ -1,3 +1,6 @@
+from instr import OpCode, getOpcodeGroup, Group, AddrMode, encode_br, encode_other, encode_one_op, encode_two_op
+from ast import literal_eval
+
 class ParseError(Exception):
     pass
 
@@ -58,19 +61,152 @@ class Assembler(object):
         Args:
             line - the assembly line
 
+        Returns:
+            A tuple representing the opcode and the instruction group: (opcode, group)
+            Eg: (OpCode.MOV, Group.TWO_OP)
+                (OpCode.BR, Group.BRANCH)
+
         Raises:
             ParseError - if an opcode cannot be parsed
         '''
-        #TODO: use enum_member.name to identify what I need
-        pass
+        if len(line) < 1:
+            raise ParseError('Invalid assembly line: ' + ' '.join(line))
+
+        op = None
+
+        for opcode in OpCode:
+            if opcode.name.lower() == line[0].lower():
+                op = opcode
+                break
+
+        if op is None:
+            raise ParseError('Cannot find valid opcode for: ' + ' '.join(line))
+
+        group = getOpcodeGroup(op)
+
+        if group is None:
+            raise ParseError('Cannot find valid instruction type for: ' + ' '.join(line))
+
+        return (opcode, group)
+
+    def _parseOperand(self, operand):
+        '''Parse a single operand
+
+        Args:
+            operand - the operand to be parsed
+
+        Returns:
+            A tuple containing the addressing mode (AddrMode), the register (as a number) and the offset
+            If one of the register number or offset doesn't apply, it will be 0
+            Eg: R5: (AddrMode.DIRECT, 5, 0)
+
+        Raises:
+            ParseError - when the parsing fails
+        '''
+        mode = None
+        r = 0
+        offset = 0
+
+        if len(operand) < 1:
+            raise ParseError('Invalid operand: ' + operand)
+
+        if operand[0].lower() == 'r': # direct access in register r
+            r = self._parseLiteral(operand[1:])
+            mode = AddrMode.DIRECT
+            offset =0
+        elif operand[0] == '(': # indirect or indexed access
+            if operand[-1] == ')': # indirect access via register r
+                if operand[1].lower() == 'r': # between the parens has to be a register
+                    r = self._parseLiteral(operand[2:-1])
+                    mode = AddrMode.INDIRECT
+                    offset = 0
+                else:
+                    raise ParseError('Invalid operand {}, indirect access must be done with a register'
+                        .format(operand))
+            else: # indexed access with offset and register r
+                close_paren_pos = operand.find(')')
+
+                if -1 != close_paren_pos:
+                    if operand[1].lower() == 'r': # between the parens has to be a register
+                        r = self._parseLiteral(operand[2:close_paren_pos])
+                        offset = self._parseLiteral(operand[close_paren_pos+1:])
+                        mode = AddrMode.INDEXED
+                    else:
+                        raise ParseError('Invalid operand {}, indexed access must be done with a register'
+                            .format(operand))
+                else:
+                    raise ParseError('Tried to parse indexed operand, but cannot find ")" in {}'.format(operand))
+        else:
+            offset = self._parseLiteral(operand)
+            r = 0
+            mode = AddrMode.IMMEDIATE
+
+        return (mode, r, offset)
+
+
+    def _parseLiteral(self, literal):
+        try:
+            return literal_eval(literal)
+        except (ValueError, SyntaxError):
+            raise ParseError('Cannot parse {} as a number'.format(literal))
+
+
+    def _parseOperands(self, opcode, group, line):
+        '''Parse the operands on a line, given the fact that we already know the opcode
+        and the instruction's group
+
+        Args:
+            opcode - the opcode of the instruction
+            group - the group of the instruction
+            line - the line from where to parse the operands
+
+        Raises:
+            ParseError if the operands on the line cannot be parsed or if the instruction
+            has invalid operands (eg: when operands are given to Group.OTHER instructions)
+        '''
+        err_msg = 'Opcode {} requires {} operands, given {} on line: {}'
+        operands = line[1:]
+        op_len = len(operands)
+
+        if group == Group.TWO_OP:
+            if op_len != 2:
+                raise ParseError(err_msg.format(opcode.name, 2, op_len, ' '.join(line)))
+
+            (mad, rd, offsetd) = self._parseOperand(operands[0])
+            (mas, rs, offsets) = self._parseOperand(operands[1])
+
+            self.programCode += encode_two_op(opcode, mad, rd, mas, rs, offsetd, offsets)
+        elif group == Group.ONE_OP:
+            if op_len != 1:
+                raise ParseError(err_msg.format(opcode.name, 1, op_len, ' '.join(line)))
+
+            (ad, r, offset) = self._parseOperand(operands[0])
+
+            self.programCode += encode_one_op(opcode, ad, r, offset)
+        elif group == Group.BRANCH:
+            if op_len != 1:
+                raise ParseError(err_msg.format(opcode.name, 1, op_len, ' '.join(line)))
+
+            (ad, r, offset) = self._parseOperand(operands[0])
+
+            self.programCode += encode_br(opcode, offset)
+        elif group == Group.OTHER:
+            if op_len != 0:
+                raise ParseError(err_msg.format(opcode.name, 0, op_len, ' '.join(line)))
+
+            self.programCode += encode_other(opcode)
+        else:
+            raise ParseError('Invalid Group, this should never be reached')
 
 
     def _tokenize(self):
         '''Tokenize the program lines into its components
 
         Raises:
-            ParseError - if the line is not standard assembly:
-            OPCODE OP,OP
+            ParseError - if the line is not standard assembly
+
+            Standard assembly:
+            OPCODE OP, OP
             OPCODE
             OPCODE OP
         '''
@@ -146,7 +282,7 @@ class Assembler(object):
         Returns:
             The list of instructions that represent the program as encoded in memory
             If the program is empty, so will be the list
-            If there is an error when parsing the file, a PrseException is raised
+            If there is an error when parsing the file, a ParseError is raised
         '''
         if not self._validatePath():
             raise ParseError('Validation for {} failed'.format(self.filePath))
@@ -167,7 +303,8 @@ class Assembler(object):
 
         for line in self.programText:
             print(line)
-            #self._parseOpcode(line)
+            (opcode, group) = self._parseOpcode(line)
+            self._parseOperands(opcode, group, line)
 
         return self.programCode
 

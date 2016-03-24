@@ -108,6 +108,10 @@ if __name__ == '__main__':
     showExampleEncodings()
     print()
     asm = Assembler('examples/factorial.asm')
+    #asm = Assembler('examples/misc.asm')
     #asm = Assembler('examples/mul.asm')
     #asm = Assembler('examples/int.asm')
-    print(asm.parse())
+    print('generated code:')
+
+    for i in asm.parse():
+        print('0x{0:04X}\t0b{0:016b}'.format(i))
