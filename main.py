@@ -1,6 +1,8 @@
 #! /usr/bin/python3.5
 
 from instr import *
+from uinstr import MPM
+from seq import Seq, Cpu, ExecEnd
 from asm import Assembler
 
 def showExampleEncodings():
@@ -107,11 +109,24 @@ if __name__ == '__main__':
     showOpCodes()
     showExampleEncodings()
     print()
-    asm = Assembler('examples/factorial.asm')
+    #asm = Assembler('examples/factorial.asm')
     #asm = Assembler('examples/misc.asm')
     #asm = Assembler('examples/mul.asm')
     #asm = Assembler('examples/int.asm')
+    asm = Assembler('examples/mov.asm')
     print('generated code:')
 
-    for i in asm.parse():
+    program_memory = asm.parse()
+    for i in program_memory:
         print('0x{0:04X}\t0b{0:016b}'.format(i))
+
+    cpu = Cpu(program_memory)
+    seq = Seq(MPM, cpu)
+
+    try:
+        seq.run()
+    except ExecEnd:
+        pass
+
+    print(cpu.__dict__)
+    print(seq.__dict__)

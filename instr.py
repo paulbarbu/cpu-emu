@@ -3,6 +3,46 @@ from enum import IntEnum, unique
 class InvalidInstruction(Exception):
     pass
 
+def getOpcode(ir):
+    '''Get the OpCode of an instruction
+
+    Args:
+        ir - the instruction for which to retrieve the opcode
+
+    Returns:
+        The OpCode decoded from the instruction
+    '''
+    rval = None
+    if Group.OTHER & ir == Group.OTHER:
+        rval = ir
+    elif Group.BRANCH & ir == Group.BRANCH:
+        rval = ir >> 8
+    elif Group.ONE_OP & ir == Group.ONE_OP:
+        rval = ir >> 6
+    else: #Group.TWO_OP
+        rval = ir >> 12
+
+    return OpCode(rval)
+
+
+def getMas(ir):
+    '''Get the numeric addressing mode of the source parameter in IR'''
+    return (ir >> 10) & 0b11
+
+
+def getMad(ir):
+    '''Get the numeric addressing mode of the destination parameter in IR'''
+    return (ir >> 4) & 0b11
+
+
+def getRs(ir):
+    '''Get the source register in IR'''
+    return (ir >> 6) & 0b1111
+
+
+def getRd(ir):
+    '''Get the destination register in IR'''
+    return ir & 0b1111
 
 def getOpcodeGroup(opcode):
     '''Get an opcode's group
