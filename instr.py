@@ -3,6 +3,19 @@ from enum import IntEnum, unique
 class InvalidInstruction(Exception):
     pass
 
+def getOpcodeNoGroup(ir):
+    '''Get the OpCode (as numerical value) of an instruction, without including the Group part
+
+    Args:
+        ir - the instruction for which to retrieve the opcode
+
+    Returns:
+        The OpCode (as number) without the Group decoded from the instruction
+    '''
+    opCodeWithGroup =  getOpcode(ir)
+    return opCodeWithGroup - getOpcodeGroup(opCodeWithGroup)
+
+
 def getOpcode(ir):
     '''Get the OpCode of an instruction
 
@@ -15,11 +28,11 @@ def getOpcode(ir):
     rval = None
     if Group.OTHER & ir == Group.OTHER:
         rval = ir
-    elif Group.BRANCH & ir == Group.BRANCH:
+    elif Group.BRANCH & (ir >> 8) == Group.BRANCH:
         rval = ir >> 8
-    elif Group.ONE_OP & ir == Group.ONE_OP:
+    elif Group.ONE_OP & (ir >> 6) == Group.ONE_OP:
         rval = ir >> 6
-    else: #Group.TWO_OP
+    elif Group.TWO_OP & (ir >> 12) == Group.TWO_OP: #Group.TWO_OP
         rval = ir >> 12
 
     return OpCode(rval)

@@ -55,6 +55,8 @@ class Seq(object):
             self.cpu.sbus = self.cpu.r[self.cpu.rIndex]
         elif sbus == SBus.T:
             self.cpu.sbus = self.cpu.t
+        elif sbus == SBus.MDR:
+            self.cpu.sbus = self.cpu.mdr
         #TODO: continue here
 
     def setDBus(self, dbus):
@@ -88,6 +90,7 @@ class Seq(object):
         if op == Alu.NONE:
             pass
         elif op == Alu.SUM:
+            #TODO: set flags
             rval = self.cpu.sbus + self.cpu.dbus
             #TODO: continue here
 
@@ -96,6 +99,8 @@ class Seq(object):
     def execMisc(self, op):
         if op == Misc.INC_PC:
             self.cpu.pc += 1
+        if op == Misc.CLEAR_C:
+            self.cpu.c = False
         elif op == Misc.NONE:
             pass
             #TODO: continue here
@@ -109,9 +114,10 @@ class Seq(object):
                 raise ExecEnd()
         elif mem == Mem.READ:
             self.cpu.mdr = self.cpu.mem[self.cpu.adr]
+        elif mem == Mem.WRITE:
+            self.cpu.mem[self.cpu.adr] = self.cpu.mdr
         elif mem == Mem.NONE:
             pass
-            #TODO: continue here
 
     def testCond(self, cond):
         rval = True
@@ -141,6 +147,10 @@ class Seq(object):
             rval = getMas(self.cpu.ir) * 2
         elif index == Index.MAD:
             rval = getMad(self.cpu.ir) * 2
+        elif index == Index.OPCODE:
+            pdb.set_trace()
+            #get the offset between the current instruction and the BR one
+            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(encode_br(OpCode.BR, 0)[0]))* 2
 
         #TODO: continue here
         return rval

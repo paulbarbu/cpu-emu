@@ -361,6 +361,38 @@ MPM = [
     #'BR32':
     build_uinstr(),
 
+    #BNE
+    build_uinstr(),
+    build_uinstr(),
+
+    #BEQ
+    build_uinstr(),
+    build_uinstr(),
+
+    #BPL
+    build_uinstr(),
+    build_uinstr(),
+
+    #BMI
+    build_uinstr(),
+    build_uinstr(),
+
+    #BCS
+    build_uinstr(),
+    build_uinstr(),
+
+    #BCC
+    build_uinstr(),
+    build_uinstr(),
+
+    #BVS
+    build_uinstr(),
+    build_uinstr(),
+
+    #BVC
+    build_uinstr(),
+    build_uinstr(),
+
     ## OTHER instructions
     #'CLC':
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_C, Mem.NONE, Cond.INT,
