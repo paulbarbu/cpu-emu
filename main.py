@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
     cpu = Cpu(program_memory)
     seq = Seq(MPM, cpu)
-
+#TODO: intreruperi
     try:
         seq.run()
     except ExecEnd:

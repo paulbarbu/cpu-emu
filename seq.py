@@ -33,7 +33,7 @@ class Cpu(object):
 
         self.sbus = 0
         self.dbus = 0
-        self.rbus = 0
+        #self.rbus = 0
 
         #TODO bvi
 
@@ -135,7 +135,6 @@ class Seq(object):
         elif cond == Cond.INT:
             rval = self.cpu.intr
 
-            #TODO: continue here
         return rval
 
     def indexToOffset(self, index):
@@ -148,9 +147,24 @@ class Seq(object):
         elif index == Index.MAD:
             rval = getMad(self.cpu.ir) * 2
         elif index == Index.OPCODE:
-            pdb.set_trace()
-            #get the offset between the current instruction and the BR one
-            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(encode_br(OpCode.BR, 0)[0]))* 2
+            # get the offset between the current instruction and the BR one
+            # this implies that the MPM must have the same order as the instructions appear
+            # in the enums
+            br_ir = encode_br(OpCode.BR, 0)[0]
+            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(br_ir)) * 2
+        elif index == Index.ONE_OP:
+            # get the offset between the current instruction and the CLR one
+            # this implies that the MPM must have the same order as the instructions appear
+            # in the enums
+            one_op_ir = encode_one_op(OpCode.CLR, AddrMode.DIRECT, 0)[0]
+            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(one_op_ir)) * 2
+        elif index == Index.TWO_OP:
+            # get the offset between the current instruction and the MOVE one
+            # this implies that the MPM must have the same order as the instructions appear
+            # in the enums
+            two_op_ir = encode_two_op(OpCode.MOV, AddrMode.DIRECT, 0, AddrMode.DIRECT, 0)[0]
+            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(two_op_ir)) * 2
+
 
         #TODO: continue here
         return rval
