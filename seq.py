@@ -33,8 +33,6 @@ class Cpu(object):
 
         self.sbus = 0
         self.dbus = 0
-        #self.rbus = 0
-
         #TODO bvi
 
 
@@ -79,6 +77,8 @@ class Seq(object):
             self.cpu.dbus = self.cpu.r[self.cpu.rIndex]
         elif dbus == DBus.MDR:
             self.cpu.dbus = self.cpu.mdr
+        elif dbus == DBus.T:
+            self.cpu.dbus = self.cpu.t
         else:
             self.cpu.dbus = None
         #TODO: continue here
@@ -106,6 +106,15 @@ class Seq(object):
             pass
         elif op == Alu.SUM:
             rval = self.cpu.sbus + self.cpu.dbus
+        elif op == Alu.SUB:
+            rval = self.cpu.sbus - self.cpu.dbus
+        elif op == Alu.AND:
+            rval = self.cpu.sbus & self.cpu.dbus
+        elif op == Alu.OR:
+            rval = self.cpu.sbus | self.cpu.dbus
+        elif op == Alu.XOR:
+            rval = self.cpu.sbus ^ self.cpu.dbus
+
             #TODO: continue here
 
         if rval != None:
@@ -168,29 +177,29 @@ class Seq(object):
         if index == Index.NONE:
             rval = 0
         elif index == Index.MAS:
-            rval = getMas(self.cpu.ir) * 2
+            rval = getMas(self.cpu.ir)
         elif index == Index.MAD:
-            rval = getMad(self.cpu.ir) * 2
+            rval = getMad(self.cpu.ir)
         elif index == Index.OPCODE:
             # get the offset between the current instruction and the BR one
             # this implies that the MPM must have the same order as the instructions appear
             # in the enums
             br_ir = encode_br(OpCode.BR, 0)[0]
-            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(br_ir)) * 2
+            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(br_ir))
         elif index == Index.ONE_OP:
             # get the offset between the current instruction and the CLR one
             # this implies that the MPM must have the same order as the instructions appear
             # in the enums
             one_op_ir = encode_one_op(OpCode.CLR, AddrMode.DIRECT, 0)[0]
-            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(one_op_ir)) * 2
+            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(one_op_ir))
         elif index == Index.TWO_OP:
             # get the offset between the current instruction and the MOVE one
             # this implies that the MPM must have the same order as the instructions appear
             # in the enums
             two_op_ir = encode_two_op(OpCode.MOV, AddrMode.DIRECT, 0, AddrMode.DIRECT, 0)[0]
-            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(two_op_ir)) * 2
+            rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(two_op_ir))
 
-        return rval
+        return rval * 2
 
     def run(self):
         '''Run the CPU

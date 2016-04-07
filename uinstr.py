@@ -54,6 +54,7 @@ class Alu(IntEnum):
     ROR = 8
     RLC = 9
     RRC = 10
+    SUB = 11
 
 ALU_SIZE = 4
 
@@ -62,19 +63,17 @@ class Misc(IntEnum):
     NONE = 0
     INC_PC = 1
     COND = 2 # set condition flags
-    CIN_COND = 3 # set carry in and condition flags
-    DEC_SP = 4
-    INC_SP = 5
-    SET_C = 6 # set carry flag
-    SET_V = 7 # set overflow flag
-    SET_Z = 8 # set zero flag
-    SET_S = 9 # set sign flag
-    CLEAR_C = 10
-    CLEAR_V = 11
-    CLEAR_Z = 12
-    CLEAR_S = 13
-    SET_FLAG = 14 # set all flags
-
+    DEC_SP = 3
+    INC_SP = 4
+    SET_C = 5 # set carry flag
+    SET_V = 6 # set overflow flag
+    SET_Z = 7 # set zero flag
+    SET_S = 8 # set sign flag
+    CLEAR_C = 9
+    CLEAR_V = 10
+    CLEAR_Z = 11
+    CLEAR_S = 12
+    SET_FLAG = 13 # set all flags
 
 MISC_SIZE = 4
 
@@ -344,11 +343,11 @@ MPM = [
     build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #SUB 31
-    build_uinstr(),
-    build_uinstr(),
+    build_uinstr(SBus.MDR, DBus.T, Alu.SUB, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 30, 19),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #CMP 33
-    build_uinstr(),
+    build_uinstr(SBus.MDR, DBus.T, Alu.SUB, RBus.MDR, Misc.COND , Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
 
     #AND 35

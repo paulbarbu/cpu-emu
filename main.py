@@ -123,6 +123,7 @@ if __name__ == '__main__':
     cpu = Cpu(program_memory)
     seq = Seq(MPM, cpu)
 #TODO: intreruperi
+#TODO: test branches
     try:
         seq.run()
     except ExecEnd:
