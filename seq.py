@@ -45,7 +45,13 @@ class Seq(object):
         self.mir = None # micro instruction register
         self.mar = 0 # micro instruction address register
         self.mpm = mpm # micro program memory
+
         self.cpu = cpu
+
+        self.z = False
+        self.c = True
+        self.v = False
+        self.s = False
 
     def setSBus(self, sbus):
         if sbus == SBus.NONE or sbus == SBus.ZERO:
@@ -57,6 +63,10 @@ class Seq(object):
             self.cpu.sbus = self.cpu.t
         elif sbus == SBus.MDR:
             self.cpu.sbus = self.cpu.mdr
+        elif sbus == SBus.IR_OFFSET:
+            self.cpu.sbus = getBrOffset(self.cpu.ir)
+        else:
+            self.cpu.sbus = None
         #TODO: continue here
 
     def setDBus(self, dbus):
@@ -69,6 +79,8 @@ class Seq(object):
             self.cpu.dbus = self.cpu.r[self.cpu.rIndex]
         elif dbus == DBus.MDR:
             self.cpu.dbus = self.cpu.mdr
+        else:
+            self.cpu.dbus = None
         #TODO: continue here
 
     def setRBus(self, rbus, val):
@@ -80,9 +92,12 @@ class Seq(object):
             self.cpu.mdr = val
         elif rbus == RBus.REG:
             self.cpu.r[self.cpu.rIndex] = val
+        elif rbus == RBus.PC:
+            self.cpu.pc = val
         elif rbus == RBus.NONE:
             pass
-        #TODO: continue here
+
+        #TODO: continue here FLAG = 6
 
     def execAlu(self, op):
         rval = None
@@ -90,9 +105,14 @@ class Seq(object):
         if op == Alu.NONE:
             pass
         elif op == Alu.SUM:
-            #TODO: set flags
             rval = self.cpu.sbus + self.cpu.dbus
             #TODO: continue here
+
+        if rval != None:
+            self.z = rval == 0
+            self.s = rval < 0
+
+        #TODO: set carry & overflow
 
         return rval
 
@@ -101,6 +121,11 @@ class Seq(object):
             self.cpu.pc += 1
         if op == Misc.CLEAR_C:
             self.cpu.c = False
+        elif op == Misc.COND:
+            self.cpu.z = self.z
+            self.cpu.c = self.c
+            self.cpu.v = self.v
+            self.cpu.s = self.s
         elif op == Misc.NONE:
             pass
             #TODO: continue here
@@ -138,10 +163,10 @@ class Seq(object):
         return rval
 
     def indexToOffset(self, index):
-        rval = 0
+        rval = None
 
         if index == Index.NONE:
-            pass
+            rval = 0
         elif index == Index.MAS:
             rval = getMas(self.cpu.ir) * 2
         elif index == Index.MAD:
@@ -165,8 +190,6 @@ class Seq(object):
             two_op_ir = encode_two_op(OpCode.MOV, AddrMode.DIRECT, 0, AddrMode.DIRECT, 0)[0]
             rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(two_op_ir)) * 2
 
-
-        #TODO: continue here
         return rval
 
     def run(self):
@@ -182,9 +205,8 @@ class Seq(object):
             self.execMem(getMem(self.mir))
             self.execMisc(getMisc(self.mir))
 
-            #pdb.set_trace()
             adr = 0
-            index =0
+            index = 0
             if self.testCond(getCond(self.mir)):
                 adr = getAddressTrue(self.mir)
                 index = self.indexToOffset(getIndexTrue(self.mir))

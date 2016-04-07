@@ -106,8 +106,8 @@ class Index(IntEnum):
     TWO_OP = 5 # IR 14 - 12
 
 COND_SIZE = 3
-ADDRESS_TRUE_SIZE = 6
-ADDRESS_FALSE_SIZE = 6
+ADDRESS_TRUE_SIZE = 7
+ADDRESS_FALSE_SIZE = 7
 
 INDEX_TRUE_SIZE = 3
 INDEX_FALSE_SIZE = 3
@@ -228,7 +228,7 @@ MPM = [
     #'IFCH':
     build_uinstr(SBus.ZERO, DBus.PC, Alu.SUM, RBus.ADR, Misc.INC_PC, Mem.IFCH, Cond.NO_OP,
         #lbl2adr(MPM, 'BR'),
-        31, 1, Index.OPCODE),
+        65, 1, Index.OPCODE),
     #'IFCH1:':
     build_uinstr(cond=Cond.ONE_OP, #address_true=lbl2adr(MPM, 'IMMD'), address_false=lbl2adr(MPM, 'IMMS'),
         address_true=11, address_false=2, index_true=Index.MAD, index_false=Index.MAS),
@@ -276,7 +276,7 @@ MPM = [
     #'IMMD':
     build_uinstr(SBus.ZERO, DBus.PC, Alu.SUM, RBus.ADR, Misc.INC_PC, Mem.READ, Cond.ONE_OP,
         #lbl2adr(MPM, 'CLR'), lbl2adr(MPM, 'MOV'),
-        29, 27, Index.ONE_OP, Index.TWO_OP),
+        41, 27, Index.ONE_OP, Index.TWO_OP),
     #'IMMD12':
     build_uinstr(),
 
@@ -284,7 +284,7 @@ MPM = [
     #'DD':
     build_uinstr(SBus.ZERO, DBus.REG, Alu.SUM, RBus.MDR, Misc.NONE, Mem.NONE, Cond.ONE_OP,
         #lbl2adr(MPM, 'CLR'), lbl2adr(MPM, 'MOV'),
-        29, 27, Index.ONE_OP, Index.TWO_OP),
+        41, 27, Index.ONE_OP, Index.TWO_OP),
     #'DD14':
     build_uinstr(),
 
@@ -292,7 +292,7 @@ MPM = [
     #'ID':
     build_uinstr(SBus.ZERO, DBus.REG, Alu.SUM, RBus.ADR, Misc.NONE, Mem.READ, Cond.ONE_OP,
         #lbl2adr(MPM, 'CLR'), lbl2adr(MPM, 'MOV'),
-        29, 27, Index.ONE_OP, Index.TWO_OP),
+        41, 27, Index.ONE_OP, Index.TWO_OP),
     #'ID16':
     build_uinstr(),
 
@@ -302,7 +302,7 @@ MPM = [
     #'XD18':
     build_uinstr(SBus.MDR, DBus.REG, Alu.SUM, RBus.ADR, Misc.NONE, Mem.READ, Cond.ONE_OP,
         #lbl2adr(MPM, 'CLR'), lbl2adr(MPM, 'MOV'),
-        29, 27, Index.ONE_OP, Index.TWO_OP),
+        41, 27, Index.ONE_OP, Index.TWO_OP),
 
     ### MISC
     #'WRITE_MEM':
@@ -339,11 +339,33 @@ MPM = [
         #lbl2adr(MPM, 'INT'), lbl2adr(MPM, 'IFCH')
         20, 0),
 
-    #TODO: continue here
+    #ADD 29
+    build_uinstr(SBus.T, DBus.MDR, Alu.SUM, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 30, 19),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
+
+    #SUB 31
+    build_uinstr(),
+    build_uinstr(),
+
+    #CMP 33
+    build_uinstr(),
+    build_uinstr(),
+
+    #AND 35
+    build_uinstr(),
+    build_uinstr(),
+
+    #OR 37
+    build_uinstr(),
+    build_uinstr(),
+
+    #XOR 39
+    build_uinstr(),
+    build_uinstr(),
 
     ## ONE_OP instructions
-    #'CLR':
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.REG_DEST, 30,
+    #'CLR' 41
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.REG_DEST, 42,
         #lbl2adr(MPM, 'WRITE_MEM')
         19),
     #'CLR_REG':
@@ -351,14 +373,56 @@ MPM = [
         #lbl2adr(MPM, 'INT'), lbl2adr(MPM, 'IFCH')
         20, 0),
 
-    #TODO: continue here
+    #NEG 43
+    build_uinstr(),
+    build_uinstr(),
+
+    #INC 45
+    build_uinstr(),
+    build_uinstr(),
+
+    #DEC 47
+    build_uinstr(),
+    build_uinstr(),
+
+    #ASL 49
+    build_uinstr(),
+    build_uinstr(),
+
+    #ASR 51
+    build_uinstr(),
+    build_uinstr(),
+
+    #LSR 53
+    build_uinstr(),
+    build_uinstr(),
+
+    #ROL 55
+    build_uinstr(),
+    build_uinstr(),
+
+    #ROR 57
+    build_uinstr(),
+    build_uinstr(),
+
+    #RLC 59
+    build_uinstr(),
+    build_uinstr(),
+
+    #RRC 61
+    build_uinstr(),
+    build_uinstr(),
+
+    #JMP 63
+    build_uinstr(),
+    build_uinstr(),
 
     ## BRANCH instructions
-    #'BR':
+    #'BR' 65
     build_uinstr(SBus.IR_OFFSET, DBus.PC, Alu.SUM, RBus.PC, Misc.NONE, Mem.NONE, Cond.INT,
         #lbl2adr(MPM, 'INT'), lbl2adr(MPM, 'IFCH')
         20, 0),
-    #'BR32':
+    #'BR':
     build_uinstr(),
 
     #BNE
@@ -398,7 +462,7 @@ MPM = [
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_C, Mem.NONE, Cond.INT,
         #lbl2adr(MPM, 'INT'), lbl2adr(MPM, 'IFCH')
         20, 0),
-    #'CLC34':
+    #'CLC':
     build_uinstr()
 
     #TODO: continue here

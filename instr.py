@@ -81,6 +81,12 @@ def getOpcodeGroup(opcode):
     return group
 
 
+def getBrOffset(ir):
+    '''Get the offset in a branch instruction
+    '''
+    return ir & 0xFF
+
+
 def checkRegister(r, opcode):
     if r >= 16:
         raise InvalidInstruction('Valid register values: R0-R15, given {} to {}'
