@@ -44,8 +44,19 @@ class Cpu(object):
 
         return retval
 
+    def _flagsToStr(self):
+        FLAG_TPL = '{0:<10}:\t{1}\n'
+        retval = '{:<5}\t{:>12}\n'.format('Flag', 'Val')
+
+        retval += FLAG_TPL.format('(Z)ero', self.z)
+        retval += FLAG_TPL.format('(C)arry', self.c)
+        retval += FLAG_TPL.format('O(v)erflow', self.v)
+        retval += FLAG_TPL.format('(S)ign', self.s)
+
+        return retval
+
     def __str__(self):
-        return self._regToStr()
+        return self._regToStr() + self. _flagsToStr()
 
 class Seq(object):
     '''Implements the sequencer automaton for a given CPU and microprogram memory'''
@@ -58,7 +69,7 @@ class Seq(object):
         self.cpu = cpu
 
         self.z = False
-        self.c = True
+        self.c = False
         self.v = False
         self.s = False
 
@@ -110,6 +121,7 @@ class Seq(object):
         elif rbus == RBus.REG:
             self.cpu.r[self.cpu.rIndex] = val
         elif rbus == RBus.PC:
+            pdb.set_trace()
             self.cpu.pc = val
         elif rbus == RBus.NONE:
             pass
@@ -131,7 +143,10 @@ class Seq(object):
             rval = self.cpu.sbus | self.cpu.dbus
         elif op == Alu.XOR:
             rval = self.cpu.sbus ^ self.cpu.dbus
-
+        elif op == Alu.ASL:
+            rval = self.cpu.dbus << 1
+        elif op == Alu.ASR:
+            rval = self.cpu.dbus >> 1
             #TODO: continue here
 
         if rval != None:

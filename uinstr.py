@@ -8,7 +8,7 @@ class SBus(IntEnum):
     ZERO = 1
     REG = 2
     T = 3
-    MDR = 4
+    MDR = 4 # TODO: I can get rid of this!
     MINUS_ONE = 5
     IR_OFFSET = 6
     ONE = 7
@@ -20,9 +20,9 @@ class DBus(IntEnum):
     NONE = 0
     PC = 1
     MDR = 2
-    REG = 3
+    REG = 3 #TODO: I can get rid of this?
     ZERO = 4
-    T = 5
+    T = 5 # TODO: I can get rid of this?
     NOT_MDR = 6
     SP = 7
     FLAG = 8
@@ -378,12 +378,12 @@ MPM = [
     build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #ASL 49
-    build_uinstr(),
-    build_uinstr(),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.ASL, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 50, 19),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #ASR 51
-    build_uinstr(),
-    build_uinstr(),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.ASR, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 52, 19),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #LSR 53
     build_uinstr(),
@@ -406,14 +406,12 @@ MPM = [
     build_uinstr(),
 
     #JMP 63
-    build_uinstr(),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.PC, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
 
     ## BRANCH instructions
     #'BR' 65
-    build_uinstr(SBus.IR_OFFSET, DBus.PC, Alu.SUM, RBus.PC, Misc.NONE, Mem.NONE, Cond.INT,
-        #lbl2adr(MPM, 'INT'), lbl2adr(MPM, 'IFCH')
-        20, 0),
+    build_uinstr(SBus.IR_OFFSET, DBus.PC, Alu.SUM, RBus.PC, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
     #'BR':
     build_uinstr(),
 
@@ -451,9 +449,7 @@ MPM = [
 
     ## OTHER instructions
     #'CLC':
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_C, Mem.NONE, Cond.INT,
-        #lbl2adr(MPM, 'INT'), lbl2adr(MPM, 'IFCH')
-        20, 0),
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_C, Mem.NONE, Cond.INT, 20, 0),
     #'CLC':
     build_uinstr()
 
