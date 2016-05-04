@@ -121,7 +121,6 @@ class Seq(object):
         elif rbus == RBus.REG:
             self.cpu.r[self.cpu.rIndex] = val
         elif rbus == RBus.PC:
-            pdb.set_trace()
             self.cpu.pc = val
         elif rbus == RBus.NONE:
             pass

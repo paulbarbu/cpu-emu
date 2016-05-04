@@ -167,6 +167,7 @@ class Assembler(object):
         err_msg = 'Opcode {} requires {} operands, given {} on line: {}'
         operands = line[1:]
         op_len = len(operands)
+        encoded_op = None
 
         if group == Group.TWO_OP:
             if op_len != 2:
@@ -175,29 +176,33 @@ class Assembler(object):
             (mad, rd, offsetd) = self._parseOperand(operands[0])
             (mas, rs, offsets) = self._parseOperand(operands[1])
 
-            self.programCode += encode_two_op(opcode, mad, rd, mas, rs, offsetd, offsets)
+            encoded_op = encode_two_op(opcode, mad, rd, mas, rs, offsetd, offsets)
         elif group == Group.ONE_OP:
             if op_len != 1:
                 raise ParseError(err_msg.format(opcode.name, 1, op_len, ' '.join(line)))
 
             (ad, r, offset) = self._parseOperand(operands[0])
 
-            self.programCode += encode_one_op(opcode, ad, r, offset)
+            encoded_op = encode_one_op(opcode, ad, r, offset)
         elif group == Group.BRANCH:
             if op_len != 1:
                 raise ParseError(err_msg.format(opcode.name, 1, op_len, ' '.join(line)))
 
             (ad, r, offset) = self._parseOperand(operands[0])
 
-            self.programCode += encode_br(opcode, offset)
+            encoded_op = encode_br(opcode, offset)
         elif group == Group.OTHER:
             if op_len != 0:
                 raise ParseError(err_msg.format(opcode.name, 0, op_len, ' '.join(line)))
 
-            self.programCode += encode_other(opcode)
+            encoded_op = encode_other(opcode)
         else:
             raise ParseError('Invalid Group, this should never be reached')
 
+
+        while len(encoded_op) < 3:
+            encoded_op.append(0)
+        self.programCode += encoded_op
 
     def _tokenize(self):
         '''Tokenize the program lines into its components
@@ -266,10 +271,10 @@ class Assembler(object):
                 self.lblToAddr[line[:-1]] = ct
             elif markIndex != -1: # the line starts with a label
                 self.lblToAddr[line[:markIndex]] = ct
-                ct += 1
+                ct += 3
                 definitionlessText.append(line[markIndex+1:].strip()) # remove the label from the line
             else: # there is no label definition on this line
-                ct += 1
+                ct += 3
                 definitionlessText.append(line.strip())
 
         print(self.lblToAddr)
