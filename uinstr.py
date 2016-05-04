@@ -343,7 +343,7 @@ MPM = [
     build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #SUB 31
-    build_uinstr(SBus.MDR, DBus.T, Alu.SUB, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 30, 19),
+    build_uinstr(SBus.MDR, DBus.T, Alu.SUB, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 32, 19),
     build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #CMP 33
@@ -351,16 +351,16 @@ MPM = [
     build_uinstr(),
 
     #AND 35
-    build_uinstr(),
-    build_uinstr(),
+    build_uinstr(SBus.MDR, DBus.T, Alu.AND, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 36, 19),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #OR 37
-    build_uinstr(),
-    build_uinstr(),
+    build_uinstr(SBus.MDR, DBus.T, Alu.OR, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 38, 19),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #XOR 39
-    build_uinstr(),
-    build_uinstr(),
+    build_uinstr(SBus.MDR, DBus.T, Alu.XOR, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 40, 19),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     ## ONE_OP instructions
     #'CLR' 41
