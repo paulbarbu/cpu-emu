@@ -11,6 +11,7 @@ class SBus(IntEnum):
     MDR = 4
     MINUS_ONE = 5
     IR_OFFSET = 6
+    ONE = 7
 
 SBUS_SIZE = 3
 
@@ -22,7 +23,7 @@ class DBus(IntEnum):
     REG = 3
     ZERO = 4
     T = 5
-    NOT_T = 6
+    NOT_MDR = 6
     SP = 7
     FLAG = 8
     IVR = 9
@@ -330,13 +331,9 @@ MPM = [
     ### TWO_OP instructions
     #TODO:  DBus NONE or ZERO?
     #'MOV':
-    build_uinstr(SBus.T, DBus.NONE, Alu.SUM, RBus.MDR, Misc.NONE, Mem.NONE, Cond.REG_DEST, 28,
-        #lbl2adr(MPM, 'WRITE_MEM')
-        19),
+    build_uinstr(SBus.T, DBus.NONE, Alu.SUM, RBus.MDR, Misc.NONE, Mem.NONE, Cond.REG_DEST, 28, 19),
     #'MOV_REG':
-    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT,
-        #lbl2adr(MPM, 'INT'), lbl2adr(MPM, 'IFCH')
-        20, 0),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT,  20, 0),
 
     #ADD 29
     build_uinstr(SBus.T, DBus.MDR, Alu.SUM, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 30, 19),
@@ -364,25 +361,21 @@ MPM = [
 
     ## ONE_OP instructions
     #'CLR' 41
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.REG_DEST, 42,
-        #lbl2adr(MPM, 'WRITE_MEM')
-        19),
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.REG_DEST, 42, 19),
     #'CLR_REG':
-    build_uinstr(SBus.ZERO, DBus.NONE, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT,
-        #lbl2adr(MPM, 'INT'), lbl2adr(MPM, 'IFCH')
-        20, 0),
+    build_uinstr(SBus.ZERO, DBus.NONE, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #NEG 43
-    build_uinstr(),
-    build_uinstr(),
+    build_uinstr(SBus.ZERO, DBus.NOT_MDR, Alu.SUM, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 44, 19),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #INC 45
-    build_uinstr(),
-    build_uinstr(),
+    build_uinstr(SBus.ONE, DBus.MDR, Alu.SUM, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 46, 19),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #DEC 47
-    build_uinstr(),
-    build_uinstr(),
+    build_uinstr(SBus.MINUS_ONE, DBus.MDR, Alu.SUM, RBus.MDR, Misc.COND, Mem.NONE, Cond.REG_DEST, 48, 19),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
     #ASL 49
     build_uinstr(),

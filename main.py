@@ -131,3 +131,4 @@ if __name__ == '__main__':
 
     print(cpu.__dict__)
     print(seq.__dict__)
+    print(cpu)

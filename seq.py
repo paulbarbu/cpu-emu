@@ -7,7 +7,7 @@ class ExecEnd(Exception):
 
 
 class Cpu(object):
-    '''Holds the CPOU state'''
+    '''Holds the CPU state'''
     def __init__(self, memory):
         '''Init the CPU states'''
         self.ir = -1
@@ -35,6 +35,17 @@ class Cpu(object):
         self.dbus = 0
         #TODO bvi
 
+    def _regToStr(self):
+        REG_TPL = 'R{0}:\t0x{1:04X}\t0b{1:016b}\t{1}\n'
+        retval = '{:<5}\t{:>5}\t{:>10}\t{:>11}\n'.format('Reg', 'Hex', 'Bin', 'Dec')
+
+        for i in range(0,16):
+            retval += REG_TPL.format(i, self.r[i])
+
+        return retval
+
+    def __str__(self):
+        return self._regToStr()
 
 class Seq(object):
     '''Implements the sequencer automaton for a given CPU and microprogram memory'''
@@ -63,6 +74,10 @@ class Seq(object):
             self.cpu.sbus = self.cpu.mdr
         elif sbus == SBus.IR_OFFSET:
             self.cpu.sbus = getBrOffset(self.cpu.ir)
+        elif sbus == SBus.MINUS_ONE:
+            self.cpu.sbus = -1
+        elif sbus == SBus.ONE:
+            self.cpu.sbus = 1
         else:
             self.cpu.sbus = None
         #TODO: continue here
@@ -77,6 +92,8 @@ class Seq(object):
             self.cpu.dbus = self.cpu.r[self.cpu.rIndex]
         elif dbus == DBus.MDR:
             self.cpu.dbus = self.cpu.mdr
+        elif dbus == DBus.NOT_MDR:
+            self.cpu.dbus = ~self.cpu.mdr
         elif dbus == DBus.T:
             self.cpu.dbus = self.cpu.t
         else:
