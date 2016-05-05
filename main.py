@@ -114,6 +114,7 @@ if __name__ == '__main__':
     #asm = Assembler('examples/mul.asm')
     #asm = Assembler('examples/int.asm')
     asm = Assembler('examples/mov.asm')
+    #asm = Assembler('examples/br.asm')
     print('generated code:')
 
     program_memory = asm.parse()

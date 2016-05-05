@@ -63,7 +63,7 @@ ALU_SIZE = 4
 class Misc(IntEnum):
     NONE = 0
     INC_PC = 1
-    COND = 2 # set condition flags
+    COND = 2 # apply condition flags
     DEC_SP = 3
     INC_SP = 4
     SET_C = 5 # set carry flag
@@ -75,6 +75,7 @@ class Misc(IntEnum):
     CLEAR_Z = 11
     CLEAR_S = 12
     SET_FLAG = 13 # set all flags
+    CLEAR_FLAG = 14 # clear all flags
 
 MISC_SIZE = 4
 
@@ -94,7 +95,16 @@ class Cond(IntEnum):
     NO_OP = 2 # no operand instruction
     ONE_OP = 3 # one operand instruction
     REG_DEST = 4 # destination is a register
+    Z = 5 # zero flag set
+    NZ = 6 # zero flag no set
+    C = 7
+    NC = 8
+    S = 9
+    NS = 10
+    V = 11
+    NV = 12
 
+COND_SIZE = 4
 
 @unique
 class Index(IntEnum):
@@ -105,7 +115,7 @@ class Index(IntEnum):
     ONE_OP = 4 # IR 13 - 6
     TWO_OP = 5 # IR 14 - 12
 
-COND_SIZE = 3
+
 ADDRESS_TRUE_SIZE = 7
 ADDRESS_FALSE_SIZE = 7
 
@@ -413,45 +423,81 @@ MPM = [
     #'BR' 65
     build_uinstr(SBus.IR_OFFSET, DBus.PC, Alu.SUM, RBus.PC, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
     #'BR':
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
+
+    #BNE 67
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NZ, 65, 66),
     build_uinstr(),
 
-    #BNE
-    build_uinstr(),
-    build_uinstr(),
-
-    #BEQ
-    build_uinstr(),
+    #BEQ 69
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.Z, 65, 66),
     build_uinstr(),
 
     #BPL
-    build_uinstr(),
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NS, 65, 66),
     build_uinstr(),
 
     #BMI
-    build_uinstr(),
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.S, 65, 66),
     build_uinstr(),
 
     #BCS
-    build_uinstr(),
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.C, 65, 66),
     build_uinstr(),
 
     #BCC
-    build_uinstr(),
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NC, 65, 66),
     build_uinstr(),
 
     #BVS
-    build_uinstr(),
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.V, 65, 66),
     build_uinstr(),
 
     #BVC
-    build_uinstr(),
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NV, 65, 66),
     build_uinstr(),
 
     ## OTHER instructions
     #'CLC':
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_C, Mem.NONE, Cond.INT, 20, 0),
     #'CLC':
-    build_uinstr()
+    build_uinstr(),
+
+    #'CLV':
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_V, Mem.NONE, Cond.INT, 20, 0),
+    build_uinstr(),
+
+    #'CLZ':
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_V, Mem.NONE, Cond.INT, 20, 0),
+    build_uinstr(),
+
+    #'CLS':
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_V, Mem.NONE, Cond.INT, 20, 0),
+    build_uinstr(),
+
+    #'CCC':
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_FLAG, Mem.NONE, Cond.INT, 20, 0),
+    build_uinstr(),
+
+    #'SEC':
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.SET_C, Mem.NONE, Cond.INT, 20, 0),
+    build_uinstr(),
+
+    #'SEV':
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.SET_V, Mem.NONE, Cond.INT, 20, 0),
+    build_uinstr(),
+
+    #'SEZ':
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.SET_Z, Mem.NONE, Cond.INT, 20, 0),
+    build_uinstr(),
+
+    #'SES':
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.SET_S, Mem.NONE, Cond.INT, 20, 0),
+    build_uinstr(),
+
+    #'SCC':
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.SET_FLAG, Mem.NONE, Cond.INT, 20, 0),
+    build_uinstr(),
 
     #TODO: continue here
 ]

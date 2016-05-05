@@ -148,8 +148,10 @@ class Assembler(object):
         try:
             return literal_eval(literal)
         except (ValueError, SyntaxError):
-            raise ParseError('Cannot parse {} as a number'.format(literal))
-
+            if self.firstPass:
+                return 0 # on the first pass we don't have to care whether the constants are parse-able or not
+            else:
+                raise ParseError('Cannot parse {} as a number'.format(literal))
 
     def _parseOperands(self, opcode, group, line):
         '''Parse the operands on a line, given the fact that we already know the opcode
@@ -189,7 +191,6 @@ class Assembler(object):
                 raise ParseError(err_msg.format(opcode.name, 1, op_len, ' '.join(line)))
 
             (ad, r, offset) = self._parseOperand(operands[0])
-
             encoded_op = encode_br(opcode, offset)
         elif group == Group.OTHER:
             if op_len != 0:
@@ -199,13 +200,15 @@ class Assembler(object):
         else:
             raise ParseError('Invalid Group, this should never be reached')
 
+        return encoded_op
 
-        while len(encoded_op) < 3:
-            encoded_op.append(0)
-        self.programCode += encoded_op
+    def _tokenize(self, line):
+        '''Tokenize a program line into its components
 
-    def _tokenize(self):
-        '''Tokenize the program lines into its components
+        Args:
+            line - the line (string) to tokenize
+
+        Returns: a list representing the tokens on the line
 
         Raises:
             ParseError - if the line is not standard assembly
@@ -215,25 +218,19 @@ class Assembler(object):
             OPCODE
             OPCODE OP
         '''
-        tokenizedText = []
+        split_line = line.split(' ', 1)
 
-        for line in self.programText:
-            split_line = line.split(' ', 1)
+        #remove spaces from the arguments
+        split_line = list(map(lambda x: x.replace(' ', ''), split_line))
 
-            #remove spaces from the arguments
-            split_line = list(map(lambda x: x.replace(' ', ''), split_line))
+        l = len(split_line)
 
-            l = len(split_line)
+        if l == 2: # instruction with one or two operands
+            split_line = [split_line[0]] +  split_line[1].split(',')
+        elif l > 2:
+            raise ParseError('Invalid instruction: {}'.format(line))
 
-            if l == 2: # instruction with one or two operands
-                split_line = [split_line[0]] +  split_line[1].split(',')
-            elif l > 2:
-                raise ParseError('Invalid instruction: {}'.format(line))
-
-            tokenizedText.append(split_line)
-
-        self.programText = tokenizedText
-
+        return split_line
 
     def _replaceLabels(self):
         '''Replace label names with addresses
@@ -256,6 +253,15 @@ class Assembler(object):
 
         self.programText = replacedText
 
+    def _getInstrSize(self, line):
+        '''Compute the length of an instruction
+
+        Args:
+            line - the line containing the instruction to compute the size of
+        Returns: the length of the instruction on the line passes as argument
+        '''
+        (opcode, group) = self._parseOpcode(self._tokenize(line))
+        return len(self._parseOperands(opcode, group, self._tokenize(line)))
 
     def _labelsToAddr(self):
         '''Translate the labels found in code to real addresses'''
@@ -271,10 +277,10 @@ class Assembler(object):
                 self.lblToAddr[line[:-1]] = ct
             elif markIndex != -1: # the line starts with a label
                 self.lblToAddr[line[:markIndex]] = ct
-                ct += 3
+                ct += self._getInstrSize(line[markIndex+1:].strip())
                 definitionlessText.append(line[markIndex+1:].strip()) # remove the label from the line
             else: # there is no label definition on this line
-                ct += 3
+                ct += self._getInstrSize(line.strip())
                 definitionlessText.append(line.strip())
 
         print(self.lblToAddr)
@@ -300,16 +306,22 @@ class Assembler(object):
 
         self.programText = list(filter(self._ignoreLine, self.programText))
 
+        self.firstPass = True
         self._labelsToAddr()
+        self.firstPass = False
         print(self.programText)
 
-        self._tokenize()
+        tokenizedText = []
+        for line in self.programText:
+            tokenizedText.append(self._tokenize(line))
+        self.programText = tokenizedText
+
         self._replaceLabels()
 
         for line in self.programText:
             print(line)
             (opcode, group) = self._parseOpcode(line)
-            self._parseOperands(opcode, group, line)
+            self.programCode += self._parseOperands(opcode, group, line)
 
         return self.programCode
 

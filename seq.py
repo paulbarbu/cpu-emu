@@ -1,5 +1,6 @@
 from uinstr import *
 from instr import *
+
 import pdb
 
 class ExecEnd(Exception):
@@ -166,6 +167,32 @@ class Seq(object):
             self.cpu.c = self.c
             self.cpu.v = self.v
             self.cpu.s = self.s
+        elif op == Misc.SET_C:
+            self.cpu.c = True
+        elif op == Misc.SET_V:
+            self.cpu.v = True
+        elif op == Misc.SET_Z:
+            self.cpu.z = True
+        elif op == Misc.SET_S:
+            self.cpu.s = True
+        elif op == Misc.CLEAR_C:
+            self.cpu.c = False
+        elif op == Misc.CLEAR_V:
+            self.cpu.v = False
+        elif op == Misc.CLEAR_Z:
+            self.cpu.z = False
+        elif op == Misc.CLEAR_S:
+            self.cpu.s = False
+        elif op == Misc.SET_FLAG:
+            self.cpu.c = True
+            self.cpu.v = True
+            self.cpu.s = True
+            self.cpu.z = True
+        elif op == Misc.CLEAR_FLAG:
+            self.cpu.c = False
+            self.cpu.v = False
+            self.cpu.s = False
+            self.cpu.z = False
         elif op == Misc.NONE:
             pass
             #TODO: continue here
@@ -199,6 +226,22 @@ class Seq(object):
             rval = AddrMode.DIRECT == AddrMode(getMad(self.cpu.ir))
         elif cond == Cond.INT:
             rval = self.cpu.intr
+        elif cond == Cond.Z:
+            rval = self.cpu.z
+        elif cond == Cond.NZ:
+            rval = not self.cpu.z
+        elif cond == Cond.S:
+            rval = self.cpu.s
+        elif cond == Cond.NS:
+            rval = not self.cpu.s
+        elif cond == Cond.V:
+            rval = self.cpu.v
+        elif cond == Cond.NV:
+            rval = not self.cpu.v
+        elif cond == Cond.C:
+            rval = self.cpu.c
+        elif cond == Cond.NC:
+            rval = not self.cpu.c
 
         return rval
 
