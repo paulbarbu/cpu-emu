@@ -13,7 +13,7 @@ class Cpu(object):
     '''Holds the CPU state'''
     def __init__(self, memory):
         '''Init the CPU states'''
-        self.STACK_SIZE = 1
+        self.STACK_SIZE = 32
         self.mem = memory + [0] * self.STACK_SIZE
         self.STACK_LIMIT = len(self.mem)
 
@@ -90,7 +90,8 @@ class Seq(object):
         elif sbus == SBus.MDR:
             self.cpu.sbus = self.cpu.mdr
         elif sbus == SBus.IR_OFFSET:
-            self.cpu.sbus = getBrOffset(self.cpu.ir)
+            # BRs are relative to the current PC
+            self.cpu.sbus = getBrOffset(self.cpu.ir) - self.cpu.pc
         elif sbus == SBus.MINUS_ONE:
             self.cpu.sbus = -1
         elif sbus == SBus.ONE:
@@ -289,7 +290,12 @@ class Seq(object):
             two_op_ir = encode_two_op(OpCode.MOV, AddrMode.DIRECT, 0, AddrMode.DIRECT, 0)[0]
             rval = (getOpcodeNoGroup(self.cpu.ir) - getOpcodeNoGroup(two_op_ir))
 
-        return rval * 2
+        rval *= 2
+        # the CALL microroutie has 4 (not 2) micro-instructions, so I need to shift the rest in that group by 2
+        if index == Index.ONE_OP and \
+            getOpcodeNoGroup(self.cpu.ir) > getOpcodeNoGroup(encode_one_op(OpCode.CALL, AddrMode.IMMEDIATE, 0)[0]):
+            rval += 2
+        return rval
 
     def run(self):
         '''Run the CPU

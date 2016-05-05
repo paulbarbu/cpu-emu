@@ -238,7 +238,7 @@ MPM = [
     #'IFCH':
     build_uinstr(SBus.ZERO, DBus.PC, Alu.SUM, RBus.ADR, Misc.INC_PC, Mem.IFCH, Cond.NO_OP,
         #lbl2adr(MPM, 'BR'),
-        71, 1, Index.OPCODE),
+        73, 1, Index.OPCODE),
     #'IFCH1:':
     build_uinstr(cond=Cond.ONE_OP, #address_true=lbl2adr(MPM, 'IMMD'), address_false=lbl2adr(MPM, 'IMMS'),
         address_true=11, address_false=2, index_true=Index.MAD, index_false=Index.MAS),
@@ -340,7 +340,7 @@ MPM = [
 
     ### TWO_OP instructions
     #TODO:  DBus NONE or ZERO?
-    #'MOV':
+    #'MOV': 27
     build_uinstr(SBus.T, DBus.NONE, Alu.SUM, RBus.MDR, Misc.NONE, Mem.NONE, Cond.REG_DEST, 28, 19),
     #'MOV_REG':
     build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.NONE, Mem.NONE, Cond.INT,  20, 0),
@@ -420,102 +420,106 @@ MPM = [
     build_uinstr(),
 
     #CALL 65
-    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.PC, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
-    build_uinstr(),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.T, Misc.NONE, Mem.NONE, Cond.TRUE, 66),
+    build_uinstr(SBus.ZERO, DBus.PC, Alu.SUM, RBus.MDR, Misc.DEC_SP, Mem.NONE, Cond.TRUE, 67),
+    build_uinstr(SBus.ZERO, DBus.SP, Alu.SUM, RBus.ADR, Misc.NONE, Mem.WRITE, Cond.TRUE, 68),
+    build_uinstr(SBus.ZERO, DBus.T, Alu.SUM, RBus.PC, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
 
-# CALL:
-#     Pd_0,Pd_MDR,SUM,Pm_T,none,none,none STEP
-#     Pd_0,Pd_PC,SUM,Pm_MDR,-2SP,none,none STEP
-#     Pd_0,Pd_SP,SUM,Pm_ADR,none,WRITE,none STEP
-#     Pd_0,Pd_T,SUM,Pm_PC,none,none,IF INT JMP INT ELSE JMP IFCH
-
-    #PUSH 67
-    build_uinstr(SBus.ZERO, DBus.REG, Alu.SUM, RBus.MDR, Misc.DEC_SP, Mem.NONE, Cond.TRUE, 68),
+    #PUSH 69
+    build_uinstr(SBus.ZERO, DBus.REG, Alu.SUM, RBus.MDR, Misc.DEC_SP, Mem.NONE, Cond.TRUE, 70),
     build_uinstr(SBus.ZERO, DBus.SP, Alu.SUM, RBus.ADR, Misc.NONE, Mem.WRITE, Cond.INT, 20, 0),
 
-    #POP 69
-    build_uinstr(SBus.ZERO, DBus.SP, Alu.SUM, RBus.ADR, Misc.NONE, Mem.READ, Cond.TRUE, 70),
+    #POP 71
+    build_uinstr(SBus.ZERO, DBus.SP, Alu.SUM, RBus.ADR, Misc.NONE, Mem.READ, Cond.TRUE, 72),
     build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.REG, Misc.INC_SP, Mem.NONE, Cond.INT, 20, 0),
 
     ## BRANCH instructions
-    #'BR' 71
+    #'BR' 73
     build_uinstr(SBus.IR_OFFSET, DBus.PC, Alu.SUM, RBus.PC, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
-    #'BR': - acting as a NOP
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
-
-    #BNE 73
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NZ, 71, 72),
+    #'BR':
     build_uinstr(),
 
-    #BEQ 75
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.Z, 71, 72),
+    #BNE 75
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NZ, 73, 111),
     build_uinstr(),
 
-    #BPL 77
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NS, 71, 72),
+    #BEQ 77
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.Z, 73, 111),
     build_uinstr(),
 
-    #BMI 79
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.S, 71, 72),
+    #BPL 79
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NS, 73, 111),
     build_uinstr(),
 
-    #BCS 81
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.C, 71, 72),
+    #BMI 81
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.S, 73, 111),
     build_uinstr(),
 
-    #BCC 83
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NC, 71, 72),
+    #BCS 83
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.C, 73, 111),
     build_uinstr(),
 
-    #BVS 85
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.V, 71, 72),
+    #BCC 85
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NC, 73, 111),
     build_uinstr(),
 
-    #BVC 87
-    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NV, 71, 72),
+    #BVS 87
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.V, 73, 111),
+    build_uinstr(),
+
+    #BVC 89
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.NV, 73, 111),
     build_uinstr(),
 
     ## OTHER instructions
-    #'CLC': 89
+    #'CLC': 91
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_C, Mem.NONE, Cond.INT, 20, 0),
     #'CLC':
     build_uinstr(),
 
-    #'CLV':
+    #'CLV': 93
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_V, Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
 
-    #'CLZ':
+    #'CLZ': 95
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_V, Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
 
-    #'CLS':
+    #'CLS': 97
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_V, Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
 
-    #'CCC':
+    #'CCC': 99
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.CLEAR_FLAG, Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
 
-    #'SEC':
+    #'SEC': 101
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.SET_C, Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
 
-    #'SEV':
+    #'SEV': 103
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.SET_V, Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
 
-    #'SEZ':
+    #'SEZ': 105
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.SET_Z, Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
 
-    #'SES':
+    #'SES': 107
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.SET_S, Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
 
-    #'SCC':
+    #'SCC': 109
     build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.SET_FLAG, Mem.NONE, Cond.INT, 20, 0),
     build_uinstr(),
+
+    #'NOP': 111
+    build_uinstr(SBus.NONE, DBus.NONE, Alu.NONE, RBus.NONE, Misc.NONE, Mem.NONE, Cond.INT, 20, 0),
+    build_uinstr(),
+
+    # RET: 113
+    build_uinstr(SBus.ZERO, DBus.SP, Alu.SUM, RBus.ADR, Misc.NONE, Mem.READ, Cond.TRUE, 114),
+    build_uinstr(SBus.ZERO, DBus.MDR, Alu.SUM, RBus.PC, Misc.INC_SP, Mem.NONE, Cond.INT, 10, 0),
 
     #TODO: continue here
 ]
