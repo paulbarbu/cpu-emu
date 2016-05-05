@@ -6,16 +6,21 @@ import pdb
 class ExecEnd(Exception):
     pass
 
+class StackOverflow(Exception):
+    pass
 
 class Cpu(object):
     '''Holds the CPU state'''
     def __init__(self, memory):
         '''Init the CPU states'''
+        self.STACK_SIZE = 1
+        self.mem = memory + [0] * self.STACK_SIZE
+        self.STACK_LIMIT = len(self.mem)
+
+        self.sp = self.STACK_LIMIT
         self.ir = -1
         self.pc = 0
-        self.sp = 0
 
-        self.mem = memory
         self.adr = -1
         self.mdr = -1
 
@@ -108,6 +113,8 @@ class Seq(object):
             self.cpu.dbus = ~self.cpu.mdr
         elif dbus == DBus.T:
             self.cpu.dbus = self.cpu.t
+        elif dbus == DBus.SP:
+            self.cpu.dbus = self.cpu.sp
         else:
             self.cpu.dbus = None
         #TODO: continue here
@@ -193,6 +200,13 @@ class Seq(object):
             self.cpu.v = False
             self.cpu.s = False
             self.cpu.z = False
+        elif op == Misc.INC_SP:
+            self.cpu.sp += 1
+        elif op == Misc.DEC_SP:
+            if self.cpu.sp > self.cpu.STACK_LIMIT - self.cpu.STACK_SIZE:
+                self.cpu.sp -= 1
+            else:
+                raise StackOverflow()
         elif op == Misc.NONE:
             pass
             #TODO: continue here
@@ -200,6 +214,8 @@ class Seq(object):
 
     def execMem(self, mem):
         if mem == Mem.IFCH:
+            if self.cpu.pc >= self.cpu.STACK_LIMIT - self.cpu.STACK_SIZE:
+                raise ExecEnd() # do not execute code from the stack
             try:
                 self.cpu.ir = self.cpu.mem[self.cpu.pc]
             except IndexError:
