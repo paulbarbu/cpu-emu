@@ -2,8 +2,9 @@
 
 from instr import *
 from uinstr import MPM
-from seq import Seq, Cpu, ExecEnd
+from seq import Seq, Cpu
 from asm import Assembler
+from debugger import Debugger
 
 def showExampleEncodings():
     print('{:<20}\t{:>5}\t{:>10}'.format('Instr', 'Hex', 'Bin'))
@@ -124,12 +125,8 @@ if __name__ == '__main__':
     cpu = Cpu(program_memory)
     seq = Seq(MPM, cpu)
 #TODO: intreruperi
-#TODO: test branches
-    try:
-        seq.run()
-    except ExecEnd:
-        pass
+    dbg = Debugger(seq)
+    dbg.attach()
 
-    print(cpu.__dict__)
-    print(seq.__dict__)
-    print(cpu)
+    # print(cpu.__dict__)
+    # print(seq.__dict__)

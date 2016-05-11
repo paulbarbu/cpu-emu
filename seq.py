@@ -50,6 +50,19 @@ class Cpu(object):
 
         return retval
 
+    def _memToStr(self):
+        MEM_TPL = '{0:04X}:\t0x{1:04X}\t0b{1:016b}\t{1}\n'
+        retval = '{:<5}\t{:>5}\t{:>10}\t{:>11}\n'.format('Adr', 'Hex', 'Bin', 'Dec')
+
+        for i in range(0,len(self.mem) - self.STACK_SIZE):
+            retval += MEM_TPL.format(i, self.mem[i])
+
+        retval += 'Stack:\n'
+        for i in range(len(self.mem) - self.STACK_SIZE, len(self.mem)):
+            retval += MEM_TPL.format(i, self.mem[i])
+
+        return retval
+
     def _flagsToStr(self):
         FLAG_TPL = '{0:<10}:\t{1}\n'
         retval = '{:<5}\t{:>12}\n'.format('Flag', 'Val')
@@ -62,7 +75,7 @@ class Cpu(object):
         return retval
 
     def __str__(self):
-        return self._regToStr() + self. _flagsToStr()
+        return self._regToStr() + self. _flagsToStr() + self._memToStr()
 
 class Seq(object):
     '''Implements the sequencer automaton for a given CPU and microprogram memory'''
@@ -98,7 +111,6 @@ class Seq(object):
             self.cpu.sbus = 1
         else:
             self.cpu.sbus = None
-        #TODO: continue here
 
     def setDBus(self, dbus):
         if dbus == DBus.NONE or dbus == DBus.ZERO:
@@ -118,7 +130,6 @@ class Seq(object):
             self.cpu.dbus = self.cpu.sp
         else:
             self.cpu.dbus = None
-        #TODO: continue here
 
     def setRBus(self, rbus, val):
         if rbus == RBus.ADR:
@@ -133,8 +144,6 @@ class Seq(object):
             self.cpu.pc = val
         elif rbus == RBus.NONE:
             pass
-
-        #TODO: continue here FLAG = 6
 
     def execAlu(self, op):
         rval = None
@@ -210,8 +219,6 @@ class Seq(object):
                 raise StackOverflow()
         elif op == Misc.NONE:
             pass
-            #TODO: continue here
-
 
     def execMem(self, mem):
         if mem == Mem.IFCH:
@@ -297,29 +304,39 @@ class Seq(object):
             rval += 2
         return rval
 
-    def run(self):
-        '''Run the CPU
-        '''
-        while True:
-            self.mir = self.mpm[self.mar]
+    def execMicroInstr(self):
+        '''Execute a microinstruction'''
+        self.mir = self.mpm[self.mar]
 
-            self.setSBus(getSBus(self.mir))
-            self.setDBus(getDBus(self.mir))
-            alu_res = self.execAlu(getAlu(self.mir))
-            self.setRBus(getRBus(self.mir), alu_res)
-            self.execMem(getMem(self.mir))
-            self.execMisc(getMisc(self.mir))
+        self.setSBus(getSBus(self.mir))
+        self.setDBus(getDBus(self.mir))
+        alu_res = self.execAlu(getAlu(self.mir))
+        self.setRBus(getRBus(self.mir), alu_res)
+        self.execMem(getMem(self.mir))
+        self.execMisc(getMisc(self.mir))
 
-            adr = 0
-            index = 0
-            if self.testCond(getCond(self.mir)):
-                adr = getAddressTrue(self.mir)
-                index = self.indexToOffset(getIndexTrue(self.mir))
-            else:
-                adr = getAddressFalse(self.mir)
-                index = self.indexToOffset(getIndexFalse(self.mir))
+        adr = 0
+        index = 0
+        if self.testCond(getCond(self.mir)):
+            adr = getAddressTrue(self.mir)
+            index = self.indexToOffset(getIndexTrue(self.mir))
+        else:
+            adr = getAddressFalse(self.mir)
+            index = self.indexToOffset(getIndexFalse(self.mir))
 
-            # the addresses in the MPM are absolute
-            self.mar = adr + index
+        # the addresses in the MPM are absolute
+        self.mar = adr + index
+
+    def showMem(self):
+        return self.cpu._memToStr()
+
+    def showReg(self):
+        return self.cpu._regToStr()
+
+    def showFlags(self):
+        return self.cpu._flagsToStr()
+
+    def showCpu(self):
+        return str(self.cpu)
 
 
