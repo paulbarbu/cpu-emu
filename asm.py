@@ -283,7 +283,7 @@ class Assembler(object):
                 ct += self._getInstrSize(line.strip())
                 definitionlessText.append(line.strip())
 
-        print(self.lblToAddr)
+        #print(self.lblToAddr)
 
         self.programText = definitionlessText
 
@@ -309,7 +309,7 @@ class Assembler(object):
         self.firstPass = True
         self._labelsToAddr()
         self.firstPass = False
-        print(self.programText)
+        #print(self.programText)
 
         tokenizedText = []
         for line in self.programText:
@@ -319,7 +319,7 @@ class Assembler(object):
         self._replaceLabels()
 
         for line in self.programText:
-            print(line)
+            #print(line)
             (opcode, group) = self._parseOpcode(line)
             self.programCode += self._parseOperands(opcode, group, line)
 

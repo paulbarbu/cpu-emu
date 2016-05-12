@@ -20,6 +20,7 @@ class Debugger(object):
             'display flags': ['f', 'flags', 'flag'],
             'display registers': ['r', 'reg', 'registers'],
             'display help': ['h', 'help'],
+            'display internal state': ['i', 'internal'],
         }
 
     def getHelp(self):
@@ -33,6 +34,7 @@ class Debugger(object):
         '''Start the seq by attaching the debugger'''
 
         action = self.actions['step'][0]
+        print(self.getHelp())
         try:
             while action not in self.actions['stop']:
                 last_action = action
@@ -56,6 +58,8 @@ class Debugger(object):
                     print(self.seq.showReg())
                 elif action in self.actions['display help']:
                     print(self.getHelp())
+                elif action in self.actions['display internal state']:
+                    print(self.seq.showInternalState())
                 elif action not in self.actions['stop']:
                     print('Unknown action, use "h" to get help, "q" to quit')
 

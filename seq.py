@@ -42,24 +42,24 @@ class Cpu(object):
         #TODO bvi
 
     def _regToStr(self):
-        REG_TPL = 'R{0}:\t0x{1:04X}\t0b{1:016b}\t{1}\n'
+        REG_TPL = 'R{0}:\t0x{1:04X}\t0b{1:016b}\t{2}\n'
         retval = '{:<5}\t{:>5}\t{:>10}\t{:>11}\n'.format('Reg', 'Hex', 'Bin', 'Dec')
 
         for i in range(0,16):
-            retval += REG_TPL.format(i, self.r[i])
+            retval += REG_TPL.format(i, self._toTwosComplement(self.r[i]), self.r[i])
 
         return retval
 
     def _memToStr(self):
-        MEM_TPL = '{0:04X}:\t0x{1:04X}\t0b{1:016b}\t{1}\n'
+        MEM_TPL = '{0:04X}:\t0x{1:04X}\t0b{1:016b}\t{2}\n'
         retval = '{:<5}\t{:>5}\t{:>10}\t{:>11}\n'.format('Adr', 'Hex', 'Bin', 'Dec')
 
         for i in range(0,len(self.mem) - self.STACK_SIZE):
-            retval += MEM_TPL.format(i, self.mem[i])
+            retval += MEM_TPL.format(i, self._toTwosComplement(self.mem[i]), self.mem[i])
 
         retval += 'Stack:\n'
         for i in range(len(self.mem) - self.STACK_SIZE, len(self.mem)):
-            retval += MEM_TPL.format(i, self.mem[i])
+            retval += MEM_TPL.format(i, self._toTwosComplement(self.mem[i]), self.mem[i])
 
         return retval
 
@@ -74,8 +74,37 @@ class Cpu(object):
 
         return retval
 
+    def _internalStateToStr(self):
+        STATE_TPL = '{0}:\t0x{1:04X}\t0b{1:016b}\t{2}\n'
+        retval = '{:<5}\t{:>12}\n'.format('Reg', 'Val')
+
+        retval += STATE_TPL.format('IR', self._toTwosComplement(self.ir), self.ir)
+        retval += STATE_TPL.format('PC', self._toTwosComplement(self.pc), self.pc)
+        retval += STATE_TPL.format('T', self._toTwosComplement(self.t), self.t)
+        retval += STATE_TPL.format('ADR', self._toTwosComplement(self.adr), self.adr)
+        retval += STATE_TPL.format('MDR', self._toTwosComplement(self.mdr), self.mdr)
+        retval += STATE_TPL.format('SP', self._toTwosComplement(self.sp), self.sp)
+
+        return retval
+
     def __str__(self):
-        return self._regToStr() + self. _flagsToStr() + self._memToStr()
+        return self._regToStr() + self. _flagsToStr() + self._memToStr() + self._internalStateToStr()
+
+    def _toTwosComplement(self, x, num_bits=16):
+        '''Turn a number to its two's complement representation
+
+            Args:
+                x: the number to be represented in two's complement
+                num_bits: the number of bits the number is represented on
+
+            Returns: the number in two's complements
+        '''
+        twos_complement = x
+        if x < 0:
+            twos_complement = x + 2 ** num_bits
+
+        return twos_complement
+
 
 class Seq(object):
     '''Implements the sequencer automaton for a given CPU and microprogram memory'''
@@ -338,5 +367,8 @@ class Seq(object):
 
     def showCpu(self):
         return str(self.cpu)
+
+    def showInternalState(self):
+        return str(self.cpu._internalStateToStr())
 
 
