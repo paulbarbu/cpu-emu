@@ -1,7 +1,7 @@
 CPU Emulator
-====================
+============
 
-A microcoded, CISC, CPU emulator
+A microcoded, CISC, CPU emulator, the CPU has didactical purposes, it doesn't exists physically.
 
 Instructions
 ============
