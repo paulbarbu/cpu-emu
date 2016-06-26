@@ -1,0 +1,53 @@
+ ;MOV R4, 4
+;BR ADDlbl
+;MOV R1, 1
+; MOV R3, 0
+;MOV R5, 42
+;MOV R2, 42
+; MOV R0,R1
+; MOV R4,(R1)
+; MOV R4,(R1)1
+ ;MOV (R1),R2
+ ;MOV (R3), 121
+; MOV (R1)1,(R1)
+; MOV (R3)1,(R1)1
+;JMP testlbl
+;CLC
+;ADDlbl:
+;CLR R3
+;ADD R5, R1
+;MOV R1, 43
+;SUB R5, R1
+;OR R5, R1
+;XOR R1, R1
+;INC R1
+mov r1, 1
+PUSH r1
+SEZ
+SEZ
+SEZ
+SEZ
+SEZ
+SEZ
+BEQ br1
+INC R1
+br1:
+INC R1
+;JMP end
+PUSH R1
+;PUSH R1
+mov r1, 46
+POP R1
+
+;CALL func
+ADD R10, 1
+add r5, -1
+JMP end
+;POP R1
+;POP R1
+;INC R1
+;testlbl:
+func:
+MOV R10, 10
+RET
+end:

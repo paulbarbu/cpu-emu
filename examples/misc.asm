@@ -1,0 +1,34 @@
+; offsets must be written after the parens ()
+; literals can be decimal or hexadecimal: 10 or 0x10
+MOV R0,R1
+MOV R4,(R2)
+MOV (R3),(R5)124
+ADD (R6),R0
+SUB R3, R5
+CMP R0, (R1)
+AND R2, R4
+OR R1, (R5)
+XOR R3, R0
+;XOR 0x123, R0
+;XOR R0, 0x10000
+CLR (R0)
+NEG R3
+INC (R2)
+DEC R5
+ASL R1
+ASR (R2)
+LSR (R0)14
+RLC R7
+JMP (R1)36
+CALL 0x1248
+PUSH R3
+POP R5
+;CLR 0x1248
+;JMP 0x15000
+;JMP (R17)
+BR 0x99
+BEQ 0x42
+;BR 0x2000
+PUSH_PC
+CLC
+NOP
